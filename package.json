@@ -9,7 +9,8 @@
   "scripts": {
     "build": "luabundler bundle src/reaper_scripts/midi_filter_envelope.lua -p \"src/?.lua\" -o dist/midi_filter_envelope.lua",
     "test": "cross-env ./luarocks test",
-    "format": "stylua src ion-reaper-dev-1.rockspec .busted"
+    "coverage": "cross-env ./lua_modules/bin/luacov",
+    "format": "stylua src ion-reaper-dev-1.rockspec .busted .luacov"
   },
   "devDependencies": {
     "@johnnymorganz/stylua-bin": "^0.20.0",

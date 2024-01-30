@@ -44,7 +44,9 @@ end
 
 function Misc.debug(fmt, ...)
   if DEBUGGING then
+    -- luacov: disable
     print(string.format(fmt, ...))
+    -- luacov: enable
   end
 end
 

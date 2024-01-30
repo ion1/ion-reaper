@@ -11,4 +11,7 @@ test = {
   flags = { "src" },
 }
 dependencies = { "lua >= 5.1, < 5.5" }
-test_dependencies = { "busted >= 2.2, < 2.3" }
+test_dependencies = {
+  "busted >= 2.2, < 2.3",
+  "luacov >= 0.15, < 0.16",
+}

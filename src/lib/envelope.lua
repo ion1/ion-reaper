@@ -79,7 +79,9 @@ function Envelope:add(time, value, slope)
       self.last_ix = self.last_ix + 1
     end
   else
+    -- luacov: disable
     error(string.format("Internal error: Invalid search result: %s, %s", ix, match))
+    -- luacov: enable
   end
 
   local next = self:lookup(self.cursor + 1)
@@ -132,14 +134,18 @@ function Envelope:merge(elements, options)
     Misc.debug("merge: match: Before")
     our_ix = 0
   else
+    -- luacov: disable
     error(string.format("Internal error: Invalid search result: ix=%s, match=%s", our_ix, match))
+    -- luacov: enable
   end
 
   our = self:lookup(our_ix)
   our_next = self:lookup(our_ix + 1)
 
   if not our and not our_next then
+    -- luacov: disable
     error(string.format("Internal error: no our and no our_next: ix=%s, match=%s", our_ix, match))
+    -- luacov: enable
   end
 
   local to_be_added = {}
@@ -291,7 +297,9 @@ function Envelope:search(ix, time)
   elseif match == Match.After then
     return self:exponential_search(ix, 1, time)
   else
+    -- luacov: disable
     error(string.format("Internal error: Invalid match result: %s", match))
+    -- luacov: enable
   end
 end
 
@@ -333,9 +341,11 @@ function Envelope:binary_search(first_ix, last_ix, time)
   Misc.debug("binary_search(%s, %s, %s)", first_ix, last_ix, time)
 
   if first_ix > last_ix then
+    -- luacov: disable
     error(
       string.format("Internal error: Binary search failed (%s, %s, %s)", first_ix, last_ix, time)
     )
+    -- luacov: enable
   end
 
   local ix = (first_ix + last_ix) // 2
@@ -348,7 +358,9 @@ function Envelope:binary_search(first_ix, last_ix, time)
   elseif match == Match.After then
     return self:binary_search(ix + 1, last_ix, time)
   else
+    -- luacov: disable
     error(string.format("Internal error: Invalid match result: %s", match))
+    -- luacov: enable
   end
 end
 

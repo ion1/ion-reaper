@@ -2,5 +2,6 @@
 /lua.bat
 /lua_modules
 /.luarocks
+/luacov.*
 /node_modules
 /dist
