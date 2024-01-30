@@ -41,4 +41,38 @@ describe("Misc", function()
       assert.is.False(Misc.is_redundant(-1, -2, 2, 1, 3, 2))
     end)
   end)
+
+  describe("intersection_time", function()
+    it("determines no intersection for parallel lines", function()
+      for slope = -10, 10 do
+        assert.is.Nil(Misc.intersection_time(-1, -2, slope, 1, 2, slope))
+      end
+    end)
+
+    it("computes the intersection between non-parallel lines", function()
+      assert.are.equal(0.5, Misc.intersection_time(-1, -2, 0, 1, 2, 8))
+      assert.are.equal(10.5, Misc.intersection_time(10, 0, 1, 10, 1, -1))
+    end)
+
+    it("agrees with extrapolate", function()
+      for _ = 1, 100, 1 do
+        local a_time = math.random(-10, 10)
+        local b_time = math.random(-10, 10)
+        local a_value = math.random(-10, 10)
+        local b_value = math.random(-10, 10)
+        local a_slope = math.random(-10, 10)
+        local b_slope
+        repeat
+          b_slope = math.random(-10, 10)
+        until math.abs(b_slope - a_slope) > 1e-3
+
+        local time = Misc.intersection_time(a_time, a_value, a_slope, b_time, b_value, b_slope)
+
+        local a_value_extrap = Misc.extrapolate(a_time, a_value, a_slope, time)
+        local b_value_extrap = Misc.extrapolate(b_time, b_value, b_slope, time)
+
+        assert.is.True(Misc.equals(a_value_extrap, b_value_extrap))
+      end
+    end)
+  end)
 end)

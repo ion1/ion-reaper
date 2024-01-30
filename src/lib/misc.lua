@@ -33,6 +33,15 @@ function Misc.is_redundant(prev_time, prev_value, prev_slope, time, value, slope
   return result
 end
 
+function Misc.intersection_time(a_time, a_value, a_slope, b_time, b_value, b_slope)
+  if math.abs(a_slope - b_slope) < 1e-6 then
+    return nil
+  end
+
+  local time = ((b_value - b_time * b_slope) - (a_value - a_time * a_slope)) / (a_slope - b_slope)
+  return time
+end
+
 function Misc.debug(fmt, ...)
   if DEBUGGING then
     print(string.format(fmt, ...))
