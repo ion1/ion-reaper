@@ -44,21 +44,49 @@ function Envelope:add(time, value, slope)
 
   local ix, match = self:search(self.cursor, time)
   if match == Match.SameTime then
-    -- Replace the element.
-    self.table[ix] = { time, value, slope }
-    self.cursor = ix
+    local prev = self:lookup(ix - 1)
+    if prev and Misc.is_redundant(prev.time, prev.value, prev.slope, time, value, slope) then
+      -- Redundant element. Remove it.
+      table.remove(self.table, ix)
+      self.cursor = ix - 1
+      self.last_ix = self.last_ix - 1
+    else
+      -- Replace the element.
+      self.table[ix] = { time, value, slope }
+      self.cursor = ix
+    end
   elseif match == Match.During then
-    -- Insert after the element.
-    table.insert(self.table, ix + 1, { time, value, slope })
-    self.cursor = ix + 1
-    self.last_ix = self.last_ix + 1
+    local prev = self:lookup(ix)
+    if prev and Misc.is_redundant(prev.time, prev.value, prev.slope, time, value, slope) then
+      -- Redundant element. Skip adding it.
+      self.cursor = ix
+    else
+      -- Insert after the element.
+      table.insert(self.table, ix + 1, { time, value, slope })
+      self.cursor = ix + 1
+      self.last_ix = self.last_ix + 1
+    end
   elseif ix == 1 and match == Match.Before then
-    -- Insert before the first element.
-    table.insert(self.table, ix, { time, value, slope })
-    self.cursor = ix
-    self.last_ix = self.last_ix + 1
+    local next = self:lookup(ix)
+    if next and Misc.is_redundant(time, value, slope, next.time, next.value, next.slope) then
+      -- Replace the first element which would become redundant.
+      self.table[ix] = { time, value, slope }
+      self.cursor = ix
+    else
+      -- Insert before the first element.
+      table.insert(self.table, ix, { time, value, slope })
+      self.cursor = ix
+      self.last_ix = self.last_ix + 1
+    end
   else
     error(string.format("Internal error: Invalid search result: %s, %s", ix, match))
+  end
+
+  local next = self:lookup(self.cursor + 1)
+  if next and Misc.is_redundant(time, value, slope, next.time, next.value, next.slope) then
+    -- The change has made the next element redundant. Remove it.
+    table.remove(self.table, self.cursor + 1)
+    self.last_ix = self.last_ix - 1
   end
 end
 

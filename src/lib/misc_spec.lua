@@ -19,4 +19,26 @@ describe("Misc", function()
       end
     end)
   end)
+
+  describe("extrapolate", function()
+    it("computes an extrapolated value at a given timestamp", function()
+      for _ = 1, 100 do
+        local reference_time = math.random(-10, 10)
+        local time = math.random(-10, 10)
+        local slope = math.random(-10, 10)
+        assert.are.equal(
+          slope * time,
+          Misc.extrapolate(reference_time, slope * reference_time, slope, time)
+        )
+      end
+    end)
+  end)
+
+  describe("is_redundant", function()
+    it("determines whether a time-value-slope element is redundant given a previous one", function()
+      assert.is.True(Misc.is_redundant(-1, -2, 2, 1, 2, 2))
+      assert.is.False(Misc.is_redundant(-1, -2, 2, 1, 2, -2))
+      assert.is.False(Misc.is_redundant(-1, -2, 2, 1, 3, 2))
+    end)
+  end)
 end)

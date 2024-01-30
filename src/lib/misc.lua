@@ -10,6 +10,29 @@ function Misc.equals(a, b, eps)
   return math.abs(b - a) < scale * eps
 end
 
+function Misc.extrapolate(time, value, slope, new_time)
+  return value + (new_time - time) * slope
+end
+
+function Misc.is_redundant(prev_time, prev_value, prev_slope, time, value, slope)
+  local result = Misc.equals(prev_slope, slope)
+    and Misc.equals(Misc.extrapolate(prev_time, prev_value, prev_slope, time), value)
+
+  if result then
+    Misc.debug(
+      "Redundant element: %s %s %s | %s %s %s",
+      prev_time,
+      prev_value,
+      prev_slope,
+      time,
+      value,
+      slope
+    )
+  end
+
+  return result
+end
+
 function Misc.debug(fmt, ...)
   if DEBUGGING then
     print(string.format(fmt, ...))
