@@ -1,0 +1,13 @@
+{
+  "plugins": ["@prettier/plugin-lua"],
+  "useTabs": false,
+  "tabWidth": 2,
+  "overrides": [
+    {
+      "files": ["*.rockspec", ".busted"],
+      "options": {
+        "parser": "lua"
+      }
+    }
+  ]
+}

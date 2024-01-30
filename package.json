@@ -1,0 +1,20 @@
+{
+  "name": "ion-reaper",
+  "version": "0.0.1",
+  "private": true,
+  "description": "ion's Reaper stuff",
+  "author": "ion",
+  "homepage": "https://github.com/ion1/ion-reaper",
+  "license": "MIT",
+  "scripts": {
+    "build": "luabundler bundle src/reaper_scripts/midi_filter_envelope.lua -p \"src/?.lua\" -o dist/midi_filter_envelope.lua",
+    "test": "cross-env ./luarocks test",
+    "format": "stylua src ion-reaper-dev-1.rockspec .busted"
+  },
+  "devDependencies": {
+    "@johnnymorganz/stylua-bin": "^0.20.0",
+    "@prettier/plugin-lua": "^0.0.3",
+    "cross-env": "^7.0.3",
+    "luabundler": "^1.2.2"
+  }
+}
