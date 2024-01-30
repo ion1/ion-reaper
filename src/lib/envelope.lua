@@ -90,6 +90,195 @@ function Envelope:add(time, value, slope)
   end
 end
 
+-- Merge another table of elements onto the envelope based on the lowest value at any
+-- given time.
+--
+-- A ceiling parameter will result in the processing stopping as soon as the final
+-- element of the input has been processed if that element has a value matching the
+-- ceiling parameter and a zero slope.
+--
+-- If no existing elements in the envelope after the time of the element in question
+-- exceed the ceiling, going through all of them would be redundant.
+--
+-- It is your responsibility to ensure that no input values exceed the ceiling when
+-- using the ceiling option.
+function Envelope:merge(elements, options)
+  local ceiling = options and options.ceiling
+
+  if self.last_ix == 0 then
+    -- Our table is empty, add verbatim.
+    for _, elem in ipairs(elements) do
+      self:add(table.unpack(elem))
+    end
+
+    return
+  end
+
+  local their_ix = 1
+  local their = self:unpack(elements[their_ix])
+  if not their then
+    return
+  end
+  local their_next = self:unpack(elements[their_ix + 1])
+
+  local our_ix, match = self:search(self.cursor, their.time)
+  self.cursor = our_ix
+
+  local our
+  local our_next
+  if match == Match.SameTime or match == Match.During then
+    Misc.debug("merge: match: SameTime or During")
+  elseif our_ix == 1 and match == Match.Before then
+    Misc.debug("merge: match: Before")
+    our_ix = 0
+  else
+    error(string.format("Internal error: Invalid search result: ix=%s, match=%s", our_ix, match))
+  end
+
+  our = self:lookup(our_ix)
+  our_next = self:lookup(our_ix + 1)
+
+  if not our and not our_next then
+    error(string.format("Internal error: no our and no our_next: ix=%s, match=%s", our_ix, match))
+  end
+
+  local to_be_added = {}
+
+  local time = their.time
+
+  while time do
+    Misc.debug("merge: Iteration")
+    Misc.debug("merge:   time=%s", time)
+    Misc.debug(
+      "merge:   Their: ix=%s time=%s value=%s slope=%s next_time=%s",
+      their_ix,
+      their.time,
+      their.value,
+      their.slope,
+      their_next and their_next.time
+    )
+    Misc.debug(
+      "merge:   Our: ix=%s time=%s value=%s slope=%s next_time=%s",
+      our_ix,
+      our and our.time,
+      our and our.value,
+      our and our.slope,
+      our_next and our_next.time
+    )
+
+    local end_time
+    if their_next and our_next then
+      end_time = math.min(their_next.time, our_next.time)
+    elseif their_next then
+      end_time = their_next.time
+    elseif our_next then
+      end_time = our_next.time
+    else
+      end_time = nil
+    end
+
+    local intersection_time = our
+      and Misc.intersection_time(
+        their.time,
+        their.value,
+        their.slope,
+        our.time,
+        our.value,
+        our.slope
+      )
+    Misc.debug("merge:   intersection_time=%s", intersection_time)
+
+    if end_time then
+      if intersection_time and time < intersection_time and intersection_time < end_time then
+        Misc.debug("merge:   Lines intersect between points")
+        -- The lines intersect between the existing points.
+        end_time = intersection_time
+      end
+    else
+      Misc.debug("merge:   Final element of both envelopes")
+      if intersection_time and time < intersection_time then
+        Misc.debug("merge:   Final lines intersect")
+        end_time = intersection_time
+      end
+    end
+
+    Misc.debug("merge:   end_time=%s", end_time)
+
+    local elem
+    if not our then
+      Misc.debug("merge:   Using their envelope")
+      elem = their
+    else
+      local discrimination_time
+      if end_time then
+        -- There may be an intersection at either `time` or `end_time`. Evaluate the
+        -- lines at at a time between those to determine which one is lower.
+        discrimination_time = (time + end_time) / 2.0
+      else
+        -- These are the final lines whose final possible intersection may be at `time`.
+        -- Evaluate the lines at an arbitrary offset from `time` to determine which one
+        -- is lower.
+        discrimination_time = time + 1.0
+      end
+
+      Misc.debug("merge:   discrimination_time=%s", discrimination_time)
+
+      local their_discr_value =
+        Misc.extrapolate(their.time, their.value, their.slope, discrimination_time)
+      local our_discr_value = Misc.extrapolate(our.time, our.value, our.slope, discrimination_time)
+
+      Misc.debug(
+        "merge:   their_discr_value=%s, our_discr_value=%s",
+        their_discr_value,
+        our_discr_value
+      )
+
+      if our_discr_value <= their_discr_value then
+        Misc.debug("merge:   Using our envelope")
+        elem = our
+      else
+        Misc.debug("merge:   Using their envelope")
+        elem = their
+      end
+    end
+
+    local value_at_time = Misc.extrapolate(elem.time, elem.value, elem.slope, time)
+    Misc.debug("merge:   Add: time=%s value=%s slope=%s", time, value_at_time, elem.slope)
+    to_be_added[#to_be_added + 1] = { time, value_at_time, elem.slope }
+
+    if ceiling then
+      if
+        not their_next
+        and (their.value >= ceiling or Misc.equals(their.value, ceiling))
+        and Misc.equals(their.slope, 0)
+      then
+        Misc.debug("merge:   Their final element matches ceiling, stopping")
+        break
+      end
+    end
+
+    -- Advance things for the next iteration.
+
+    time = end_time
+
+    if their_next and time >= their_next.time then
+      their_ix = their_ix + 1
+      their = their_next
+      their_next = self:unpack(elements[their_ix + 1])
+    end
+
+    if our_next and time >= our_next.time then
+      our_ix = our_ix + 1
+      our = our_next
+      our_next = self:lookup(our_ix + 1)
+    end
+  end
+
+  for _, elem in ipairs(to_be_added) do
+    self:add(table.unpack(elem))
+  end
+end
+
 function Envelope:search(ix, time)
   Misc.debug("search(%s, %s)", ix, time)
 

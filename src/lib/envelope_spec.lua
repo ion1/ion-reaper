@@ -84,4 +84,106 @@ describe("Envelope", function()
       }, env.table)
     end)
   end)
+
+  describe("merge", function()
+    it("should add elements to an empty envelope verbatim", function()
+      local env = Envelope:new()
+
+      local elements = {
+        { 0, 100, 0 },
+        { 1, 100, -10 },
+        { 2, 90, 0 },
+        { 5, 90, 10 },
+        { 6, 100, 0 },
+      }
+
+      env:merge(elements)
+
+      assert.are.same(elements, env.table)
+    end)
+
+    it("should combine two envelopes", function()
+      local env = Envelope:new()
+
+      env:merge({
+        { 0, 100, 0 },
+        { 1, 100, -10 },
+        { 2, 90, 0 },
+        { 4, 90, 10 },
+        { 5, 100, 0 },
+        { 6, 100, -10 },
+        { 8, 80, 0 },
+        { 9, 80, 10 },
+        { 11, 100, 0 },
+      })
+
+      env:merge({
+        { 1.5, 100, 0 },
+        { 2.5, 100, -10 },
+        { 4.5, 80, 0 },
+        { 6, 80, 10 },
+        { 8, 100, 0 },
+      })
+
+      assert.are.same({
+        { 0, 100, 0 },
+        { 1, 100, -10 },
+        { 2, 90, 0 },
+        { 3.5, 90, -10 },
+        { 4.5, 80, 0 },
+        { 6, 80, 10 },
+        { 7, 90, -10 },
+        { 8, 80, 0 },
+        { 9, 80, 10 },
+        { 11, 100, 0 },
+      }, env.table)
+    end)
+
+    describe("given a ceiling value and the final element of the parameter matching it", function()
+      local base = {
+        { 0, 100, -10 },
+        { 1, 90, 10 },
+        { 2, 100, 0 },
+        { 3, 100, 10 },
+        { 4, 110, -10 },
+        { 6, 90, 0 },
+      }
+
+      local patch = {
+        { 0, 90, 10 },
+        { 1, 100, 0 },
+      }
+
+      it("should not stop processing if the ceiling parameter is not given", function()
+        local env = Envelope:new()
+        env:merge(base)
+        env:merge(patch)
+
+        assert.are.same({
+          { 0, 90, 10 },
+          { 0.5, 95, -10 },
+          { 1, 90, 10 },
+          { 2, 100, 0 },
+          { 5, 100, -10 },
+          { 6, 90, 0 },
+        }, env.table)
+      end)
+
+      it("should stop processing if the ceiling parameter is given", function()
+        local env = Envelope:new()
+        env:merge(base)
+        env:merge(patch, { ceiling = 100 })
+
+        assert.are.same({
+          { 0, 90, 10 },
+          { 0.5, 95, -10 },
+          { 1, 90, 10 },
+          { 2, 100, 0 },
+          { 3, 100, 10 },
+          { 4, 110, -10 },
+          { 6, 90, 0 },
+        }, env.table)
+      end)
+    end)
+  end)
 end)
