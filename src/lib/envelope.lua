@@ -126,8 +126,6 @@ function Envelope:merge(elements, options)
   local our_ix, match = self:search(self.cursor, their.time)
   self.cursor = our_ix
 
-  local our
-  local our_next
   if match == Match.SameTime or match == Match.During then
     Misc.debug("merge: match: SameTime or During")
   elseif our_ix == 1 and match == Match.Before then
@@ -139,8 +137,8 @@ function Envelope:merge(elements, options)
     -- luacov: enable
   end
 
-  our = self:lookup(our_ix)
-  our_next = self:lookup(our_ix + 1)
+  local our = self:lookup(our_ix)
+  local our_next = self:lookup(our_ix + 1)
 
   if not our and not our_next then
     -- luacov: disable
