@@ -6,6 +6,9 @@ description = {
   homepage = "https://github.com/ion1/ion-reaper",
   license = "MIT",
 }
+source = {
+  url = "git+https://github.com/ion1/ion-reaper.git",
+}
 test = {
   type = "busted",
   flags = { "src" },
