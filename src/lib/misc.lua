@@ -2,6 +2,22 @@ local Misc = {}
 
 local DEBUGGING = false
 
+-- luacov: disable
+if DEBUGGING then
+  if reaper then
+    function Misc.debug(fmt, ...)
+      reaper.ShowConsoleMsg(string.format(fmt .. "\n", ...))
+    end
+  else
+    function Misc.debug(fmt, ...)
+      print(string.format(fmt, ...))
+    end
+  end
+else
+  function Misc.debug(fmt, ...) end
+end
+-- luacov: enable
+
 function Misc.equals(a, b, eps)
   eps = eps or 1e-6
 
@@ -40,14 +56,6 @@ function Misc.intersection_time(a_time, a_value, a_slope, b_time, b_value, b_slo
 
   local time = ((b_value - b_time * b_slope) - (a_value - a_time * a_slope)) / (a_slope - b_slope)
   return time
-end
-
-function Misc.debug(fmt, ...)
-  if DEBUGGING then
-    -- luacov: disable
-    print(string.format(fmt, ...))
-    -- luacov: enable
-  end
 end
 
 return Misc
