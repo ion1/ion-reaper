@@ -186,4 +186,25 @@ describe("Envelope", function()
       end)
     end)
   end)
+
+  describe("elements", function()
+    it("should iterate over the elements in the envelope", function()
+      local expected = {
+        { 0, 100, -10 },
+        { 1, 90, 0 },
+        { 3, 90, 10 },
+        { 4, 100, 0 },
+      }
+
+      local env = Envelope:new()
+      env:merge(expected)
+
+      local result = {}
+      for pos, pitch, slope in env:elements() do
+        result[#result + 1] = { pos, pitch, slope }
+      end
+
+      assert.are.same(expected, result)
+    end)
+  end)
 end)

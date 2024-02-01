@@ -362,6 +362,21 @@ function Envelope:binary_search(first_ix, last_ix, time)
   end
 end
 
+-- An iterator which returns time, pitch, slope for each element in the envelope
+function Envelope:elements()
+  local ix = 1
+
+  return function()
+    if ix > self.last_ix then
+      return nil
+    end
+
+    local current_ix = ix
+    ix = ix + 1
+    return table.unpack(self.table[current_ix])
+  end
+end
+
 function Envelope:lookup(ix)
   return self:unpack(self.table[ix])
 end
