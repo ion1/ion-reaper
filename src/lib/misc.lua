@@ -58,4 +58,24 @@ function Misc.intersection_time(a_time, a_value, a_slope, b_time, b_value, b_slo
   return time
 end
 
+-- List the byte values within a string separated by spaces.
+function Misc.bytes(str)
+  return table.concat({ string.byte(str, 0, -1) }, " ")
+end
+
+-- Convert a MIDI pitch value into a string such as "C4(+25)"
+function Misc.midi_pitch_string(midi_pitch)
+  local octave_table = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" }
+
+  local rounded_midi_pitch = math.ceil(midi_pitch - 0.5)
+
+  local note_in_octave = rounded_midi_pitch % 12
+  local octave = (rounded_midi_pitch // 12) - 1
+
+  local fraction = midi_pitch - rounded_midi_pitch
+  local cents = fraction * 100
+
+  return string.format("%s%d(%+03.0f)", octave_table[note_in_octave + 1], octave, cents)
+end
+
 return Misc
