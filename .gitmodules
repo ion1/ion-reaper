@@ -1,0 +1,6 @@
+[submodule "luals_addons/LLS-Addons"]
+	path = luals_addons/LLS-Addons
+	url = https://github.com/LuaLS/LLS-Addons.git
+[submodule "luals_addons/vscode-reascript-extension"]
+	path = luals_addons/vscode-reascript-extension
+	url = https://github.com/AntoineBalaine/vscode-reascript-extension.git

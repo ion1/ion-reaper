@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
+  "runtime": {
+    "version": "Lua 5.4",
+    "path": ["src/?.lua", "src/?/init.lua"]
+  },
+  "workspace": {
+    "library": [
+      "luals_addons/LLS-Addons/addons/busted/module/library",
+      "luals_addons/LLS-Addons/addons/luassert/module/library",
+      "luals_addons/vscode-reascript-extension/resources"
+    ]
+  }
+}
