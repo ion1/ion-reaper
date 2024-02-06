@@ -7,8 +7,8 @@ function Slope.extrapolate(time, value, slope, new_time)
 end
 
 function Slope.is_redundant(prev_time, prev_value, prev_slope, time, value, slope)
-  local result = Misc.equals(prev_slope, slope)
-    and Misc.equals(Slope.extrapolate(prev_time, prev_value, prev_slope, time), value)
+  local result = Misc.almost_equals(prev_slope, slope)
+    and Misc.almost_equals(Slope.extrapolate(prev_time, prev_value, prev_slope, time), value)
 
   if result then
     Misc.debug(

@@ -254,8 +254,8 @@ function Envelope:merge(elements, options)
     if ceiling then
       if
         not their_next
-        and (their.value >= ceiling or Misc.equals(their.value, ceiling))
-        and Misc.equals(their.slope, 0)
+        and (their.value >= ceiling or Misc.almost_equals(their.value, ceiling))
+        and Misc.almost_equals(their.slope, 0)
       then
         Misc.debug("merge:   Their final element matches ceiling, stopping")
         break
@@ -296,7 +296,7 @@ function Envelope:merge_points(points, options)
     local time, value = table.unpack(point)
 
     if previous_time ~= nil and previous_value ~= nil then
-      if Misc.equals(previous_time, time) then
+      if Misc.almost_equals(previous_time, time) then
         error(
           string.format(
             "The times are equal, resulting in an infinite slope: %s, %s",

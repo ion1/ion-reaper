@@ -18,7 +18,7 @@ else
 end
 -- luacov: enable
 
-function Misc.equals(a, b, eps)
+function Misc.almost_equals(a, b, eps)
   eps = eps or 1e-6
 
   local scale = math.max(1.0, math.abs(a), math.abs(b))

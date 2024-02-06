@@ -5,7 +5,7 @@ local Misc = require("lib.misc")
 
 local function are_almostequal(_state, arguments)
   local expected, actual = table.unpack(arguments)
-  return Misc.equals(expected, actual)
+  return Misc.almost_equals(expected, actual)
 end
 
 say:set_namespace("en")

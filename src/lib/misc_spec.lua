@@ -12,11 +12,11 @@ describe("Misc", function()
           local small_delta = 1e-7 * scale
           local big_delta = 1e-5 * scale
 
-          assert.is.True(Misc.equals(value, value + small_delta))
-          assert.is.True(Misc.equals(value, value - small_delta))
+          assert.is.True(Misc.almost_equals(value, value + small_delta))
+          assert.is.True(Misc.almost_equals(value, value - small_delta))
 
-          assert.is.False(Misc.equals(value, value + big_delta))
-          assert.is.False(Misc.equals(value, value - big_delta))
+          assert.is.False(Misc.almost_equals(value, value + big_delta))
+          assert.is.False(Misc.almost_equals(value, value - big_delta))
         end
       end
     end)
