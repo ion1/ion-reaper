@@ -28,6 +28,65 @@ describe("Misc", function()
     end)
   end)
 
+  describe("adjacent_pairs", function()
+    it("should not yield anything given an empty input", function()
+      local actual = {}
+      for value, previous_value in Misc.adjacent_pairs(function() end) do
+        actual[#actual + 1] = { value, previous_value }
+      end
+
+      assert.are.same({}, actual)
+    end)
+
+    describe("should yield all adjacent pairs of values in the input", function()
+      it("given a stateless iterator", function()
+        local expected = {
+          { {}, { 1, "a" } },
+          { { 1, "a" }, { 2, "b" } },
+          { { 2, "b" }, { 3, "c" } },
+          { { 3, "c" }, { 4, "d" } },
+          { { 4, "d" }, { 5, "e" } },
+          { { 5, "e" }, {} },
+        }
+
+        local actual = {}
+        for value, previous_value in Misc.adjacent_pairs(ipairs({ "a", "b", "c", "d", "e" })) do
+          actual[#actual + 1] = { value, previous_value }
+        end
+
+        assert.are.same(expected, actual)
+      end)
+
+      it("given a stateful iterator", function()
+        local function example_iterator(count)
+          local i = 0
+          return function()
+            i = i + 1
+            if i <= count then
+              return i
+            end
+          end
+        end
+
+        local expected = {
+          { {}, { 1 } },
+          { { 1 }, { 2 } },
+          { { 2 }, { 3 } },
+          { { 3 }, { 4 } },
+          { { 4 }, { 5 } },
+          { { 5 }, {} },
+        }
+
+        local actual = {}
+        for value, previous_value in Misc.adjacent_pairs(example_iterator(5)) do
+          actual[#actual + 1] = { value, previous_value }
+        end
+
+        assert.are.same(expected, actual)
+      end)
+    end)
+  end)
+
   describe("midi_pitch_string", function()
     it("should return a string corresponding to the given MIDI pitch", function()
       assert.are.equal("A0(+00)", Misc.midi_pitch_string(69 - 4 * 12))

@@ -31,6 +31,30 @@ function Misc.bytes(str)
   return table.concat({ string.byte(str, 0, -1) }, " ")
 end
 
+-- Returns each previous_value, value where previous_value is {} on the first iteration
+-- and value is {} on the last iteration.
+function Misc.adjacent_pairs(iter, iter_arg, iter_state)
+  return coroutine.wrap(function()
+    local previous_value = {}
+
+    while true do
+      local value = { iter(iter_arg, iter_state) }
+      iter_state = value[1]
+      if not iter_state then
+        if previous_value[1] then
+          -- The previous one was the final value. Yield one more pair.
+          coroutine.yield(previous_value, {})
+        end
+        break
+      end
+
+      coroutine.yield(previous_value, value)
+
+      previous_value = value
+    end
+  end)
+end
+
 -- Convert a MIDI pitch value into a string such as "C4(+25)"
 function Misc.midi_pitch_string(midi_pitch)
   local octave_table = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" }
