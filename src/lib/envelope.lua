@@ -1,4 +1,5 @@
 local Misc = require("lib.misc")
+local Slope = require("lib.slope")
 
 local Match = {
   -- The searched time matches the current envelope point exactly.
@@ -45,7 +46,7 @@ function Envelope:add(time, value, slope)
   local ix, match = self:search(self.cursor, time)
   if match == Match.SameTime then
     local prev = self:lookup(ix - 1)
-    if prev and Misc.is_redundant(prev.time, prev.value, prev.slope, time, value, slope) then
+    if prev and Slope.is_redundant(prev.time, prev.value, prev.slope, time, value, slope) then
       -- Redundant element. Remove it.
       table.remove(self.table, ix)
       self.cursor = ix - 1
@@ -57,7 +58,7 @@ function Envelope:add(time, value, slope)
     end
   elseif match == Match.During then
     local prev = self:lookup(ix)
-    if prev and Misc.is_redundant(prev.time, prev.value, prev.slope, time, value, slope) then
+    if prev and Slope.is_redundant(prev.time, prev.value, prev.slope, time, value, slope) then
       -- Redundant element. Skip adding it.
       self.cursor = ix
     else
@@ -68,7 +69,7 @@ function Envelope:add(time, value, slope)
     end
   elseif ix == 1 and match == Match.Before then
     local next = self:lookup(ix)
-    if next and Misc.is_redundant(time, value, slope, next.time, next.value, next.slope) then
+    if next and Slope.is_redundant(time, value, slope, next.time, next.value, next.slope) then
       -- Replace the first element which would become redundant.
       self.table[ix] = { time, value, slope }
       self.cursor = ix
@@ -85,7 +86,7 @@ function Envelope:add(time, value, slope)
   end
 
   local next = self:lookup(self.cursor + 1)
-  if next and Misc.is_redundant(time, value, slope, next.time, next.value, next.slope) then
+  if next and Slope.is_redundant(time, value, slope, next.time, next.value, next.slope) then
     -- The change has made the next element redundant. Remove it.
     table.remove(self.table, self.cursor + 1)
     self.last_ix = self.last_ix - 1
@@ -182,7 +183,7 @@ function Envelope:merge(elements, options)
     end
 
     local intersection_time = our
-      and Misc.intersection_time(
+      and Slope.intersection_time(
         their.time,
         their.value,
         their.slope,
@@ -228,8 +229,8 @@ function Envelope:merge(elements, options)
       Misc.debug("merge:   discrimination_time=%s", discrimination_time)
 
       local their_discr_value =
-        Misc.extrapolate(their.time, their.value, their.slope, discrimination_time)
-      local our_discr_value = Misc.extrapolate(our.time, our.value, our.slope, discrimination_time)
+        Slope.extrapolate(their.time, their.value, their.slope, discrimination_time)
+      local our_discr_value = Slope.extrapolate(our.time, our.value, our.slope, discrimination_time)
 
       Misc.debug(
         "merge:   their_discr_value=%s, our_discr_value=%s",
@@ -246,7 +247,7 @@ function Envelope:merge(elements, options)
       end
     end
 
-    local value_at_time = Misc.extrapolate(elem.time, elem.value, elem.slope, time)
+    local value_at_time = Slope.extrapolate(elem.time, elem.value, elem.slope, time)
     Misc.debug("merge:   Add: time=%s value=%s slope=%s", time, value_at_time, elem.slope)
     to_be_added[#to_be_added + 1] = { time, value_at_time, elem.slope }
 
