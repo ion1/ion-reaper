@@ -1,3 +1,5 @@
+require("src.lib.luassert_almostequal")
+
 local Misc = require("lib.misc")
 
 describe("Misc", function()
@@ -71,7 +73,7 @@ describe("Misc", function()
         local a_value_extrap = Misc.extrapolate(a_time, a_value, a_slope, time)
         local b_value_extrap = Misc.extrapolate(b_time, b_value, b_slope, time)
 
-        assert.is.True(Misc.equals(a_value_extrap, b_value_extrap))
+        assert.are.almostequal(a_value_extrap, b_value_extrap)
       end
     end)
   end)
