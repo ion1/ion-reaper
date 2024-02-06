@@ -78,4 +78,15 @@ function Misc.midi_pitch_string(midi_pitch)
   return string.format("%s%d(%+03.0f)", octave_table[note_in_octave + 1], octave, cents)
 end
 
+function Misc.midi_pitch_to_frequency(midi_pitch)
+  return 440.0 * 2.0 ^ ((midi_pitch - 69) / 12.0)
+end
+
+local LOG_2 = math.log(2.0)
+local INV_LOG_2 = 1.0 / LOG_2
+
+function Misc.frequency_to_midi_pitch(frequency)
+  return 12.0 * math.log(frequency / 440.0) * INV_LOG_2 + 69
+end
+
 return Misc

@@ -94,4 +94,46 @@ describe("Misc", function()
       assert.are.equal("C#5(-49)", Misc.midi_pitch_string(72.51))
     end)
   end)
+
+  local midi_pitch_frequency_examples = {
+    { -3, 440 / 64 },
+    { 69, 440 },
+    { 129, 440 * 32 },
+    { 72, 440 * 2 ^ (3 / 12) },
+    { 72.5, 440 * 2 ^ (3.5 / 12) },
+  }
+
+  describe("midi_pitch_to_frequency", function()
+    it("should return the correct frequency for the given MIDI pitch", function()
+      for _, example in ipairs(midi_pitch_frequency_examples) do
+        local pitch, frequency = table.unpack(example)
+        assert.are.almostequal(frequency, Misc.midi_pitch_to_frequency(pitch))
+      end
+    end)
+
+    it("should agree with frequency_to_midi_pitch", function()
+      for _ = 1, 100 do
+        local frequency = 20000 * math.random()
+        local pitch = Misc.frequency_to_midi_pitch(frequency)
+        assert.are.almostequal(frequency, Misc.midi_pitch_to_frequency(pitch))
+      end
+    end)
+  end)
+
+  describe("frequency_to_midi_pitch", function()
+    it("should return the correct MIDI pitch for the given frequency", function()
+      for _, example in ipairs(midi_pitch_frequency_examples) do
+        local pitch, frequency = table.unpack(example)
+        assert.are.almostequal(pitch, Misc.frequency_to_midi_pitch(frequency))
+      end
+    end)
+
+    it("should agree with midi_pitch_to_frequency", function()
+      for _ = 1, 100 do
+        local pitch = 250 * math.random() - 50
+        local frequency = Misc.midi_pitch_to_frequency(pitch)
+        assert.are.almostequal(pitch, Misc.frequency_to_midi_pitch(frequency))
+      end
+    end)
+  end)
 end)
