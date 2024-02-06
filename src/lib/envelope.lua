@@ -283,6 +283,40 @@ function Envelope:merge(elements, options)
   end
 end
 
+-- Merge the given table of points to the envelope, computing the slopes between the
+-- points automatically. The slope following the final point is assumed to be zero.
+function Envelope:merge_points(points, options)
+  local elements = {}
+
+  local previous_time = nil
+  local previous_value = nil
+
+  for i, point in ipairs(points) do
+    local time, value = table.unpack(point)
+
+    if previous_time ~= nil and previous_value ~= nil then
+      if Misc.equals(previous_time, time) then
+        error(
+          string.format(
+            "The times are equal, resulting in an infinite slope: %s, %s",
+            previous_time,
+            time
+          )
+        )
+      end
+
+      local slope = (value - previous_value) / (time - previous_time)
+      elements[i - 1] = { previous_time, previous_value, slope }
+    end
+
+    previous_time, previous_value = time, value
+  end
+
+  elements[#points] = { previous_time, previous_value, 0 }
+
+  self:merge(elements, options)
+end
+
 function Envelope:search(ix, time)
   Misc.debug("search(%s, %s)", ix, time)
 

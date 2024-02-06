@@ -187,6 +187,63 @@ describe("Envelope", function()
     end)
   end)
 
+  describe("merge_points", function()
+    it("should construct an envelope with the appropriate slopes", function()
+      local env = Envelope.new()
+      env:merge_points({
+        { 0, 100 },
+        { 1, 90 },
+        { 2, 50 },
+        { 4, 60 },
+        { 5, 90 },
+      })
+
+      assert.are.same({
+        { 0, 100, -10 },
+        { 1, 90, -40 },
+        { 2, 50, 5 },
+        { 4, 60, 30 },
+        { 5, 90, 0 },
+      }, env.table)
+    end)
+
+    it("should not accept points that would result in an infinite slope", function()
+      local env = Envelope.new()
+      assert.has.error(function()
+        env:merge_points({
+          { 0, 100 },
+          { 0, 90 },
+        })
+      end)
+    end)
+
+    it("should pass the ceiling parameter to merge", function()
+      local env = Envelope.new()
+      env:merge_points({
+        { 0, 100 },
+        { 1, 90 },
+        { 2, 100 },
+        { 3, 100 },
+        { 4, 110 },
+        { 6, 90 },
+      })
+      env:merge_points({
+        { 0, 90 },
+        { 1, 100 },
+      }, { ceiling = 100 })
+
+      assert.are.same({
+        { 0, 90, 10 },
+        { 0.5, 95, -10 },
+        { 1, 90, 10 },
+        { 2, 100, 0 },
+        { 3, 100, 10 },
+        { 4, 110, -10 },
+        { 6, 90, 0 },
+      }, env.table)
+    end)
+  end)
+
   describe("elements", function()
     it("should iterate over the elements in the envelope", function()
       local expected = {
