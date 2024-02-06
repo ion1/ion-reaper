@@ -3,7 +3,7 @@ local Envelope = require("lib.envelope")
 describe("Envelope", function()
   describe("add", function()
     it("should build an ordered table regardless of the insertion order", function()
-      local env = Envelope:new()
+      local env = Envelope.new()
       local data = {}
       for i = -100, 100, 1 do
         -- Using a slope which does not match the data to avoid coalescing.
@@ -28,7 +28,7 @@ describe("Envelope", function()
     end)
 
     it("should coalesce redundant elements when new ones are being added", function()
-      local env = Envelope:new()
+      local env = Envelope.new()
       local data = {}
       for i = -100, 100, 1 do
         -- Using a slope which matches the data.
@@ -47,7 +47,7 @@ describe("Envelope", function()
     end)
 
     it("should coalesce redundant elements when existing ones are being replaced", function()
-      local env = Envelope:new()
+      local env = Envelope.new()
       env:add(0, 20, 2)
       env:add(1, 22, -2)
 
@@ -87,7 +87,7 @@ describe("Envelope", function()
 
   describe("merge", function()
     it("should add elements to an empty envelope verbatim", function()
-      local env = Envelope:new()
+      local env = Envelope.new()
 
       local elements = {
         { 0, 100, 0 },
@@ -103,7 +103,7 @@ describe("Envelope", function()
     end)
 
     it("should combine two envelopes", function()
-      local env = Envelope:new()
+      local env = Envelope.new()
 
       env:merge({
         { 0, 100, 0 },
@@ -155,7 +155,7 @@ describe("Envelope", function()
       }
 
       it("should not stop processing if the ceiling parameter is not given", function()
-        local env = Envelope:new()
+        local env = Envelope.new()
         env:merge(base)
         env:merge(patch)
 
@@ -170,7 +170,7 @@ describe("Envelope", function()
       end)
 
       it("should stop processing if the ceiling parameter is given", function()
-        local env = Envelope:new()
+        local env = Envelope.new()
         env:merge(base)
         env:merge(patch, { ceiling = 100 })
 
@@ -196,7 +196,7 @@ describe("Envelope", function()
         { 4, 100, 0 },
       }
 
-      local env = Envelope:new()
+      local env = Envelope.new()
       env:merge(expected)
 
       local result = {}
