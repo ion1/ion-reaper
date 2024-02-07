@@ -1,3 +1,5 @@
+local Misc = require("lib.misc")
+
 local ReaperUtils = {}
 
 function ReaperUtils.message(fmt, ...)
@@ -10,6 +12,59 @@ function ReaperUtils.selected_media_item_iterator(project)
 
     for i = 0, count - 1 do
       coroutine.yield(reaper.GetSelectedMediaItem(project, i))
+    end
+  end)
+end
+
+-- Split consecutive notes into segments whenever there is a pause between notes.
+function ReaperUtils.lowest_note_segment_iterator(media_item)
+  return coroutine.wrap(function()
+    local current_segment
+
+    local function add_note(note)
+      current_segment.end_time = note.end_time
+      local notes = current_segment.notes
+      notes[#notes + 1] = note
+    end
+
+    local function new_segment(last_note, next_note)
+      if current_segment then
+        current_segment.next_segment_start_time = next_note and next_note.start_time
+        coroutine.yield(current_segment)
+      end
+
+      if not next_note then
+        current_segment = nil
+      else
+        current_segment = {
+          start_time = next_note.start_time,
+          end_time = next_note.end_time,
+          previous_segment_end_time = last_note and last_note.end_time,
+          next_segment_start_time = nil,
+          notes = {},
+        }
+      end
+    end
+
+    for prev_note_t, note_t in Misc.adjacent_pairs(ReaperUtils.lowest_note_iterator(media_item)) do
+      local prev_note, note = prev_note_t[1], note_t[1]
+
+      if not prev_note then
+        -- The first note of the first segment.
+        new_segment(nil, note)
+      end
+
+      if prev_note and note and note.start_time - prev_note.end_time >= 0.1 then
+        -- There is a pause between the notes.
+        new_segment(prev_note, note)
+      end
+
+      if note then
+        add_note(note)
+      else
+        -- The previous note was the final note of the final segment. Yield the segment.
+        new_segment(prev_note, nil)
+      end
     end
   end)
 end
@@ -28,14 +83,14 @@ function ReaperUtils.lowest_note_iterator(media_item)
       else
         if not pitch then
           -- Note ended.
-          local last_time, last_pitch = last_note.time, last_note.pitch
+          local output = { start_time = last_note.time, end_time = time, pitch = last_note.pitch }
+          coroutine.yield(output)
           last_note = nil
-          coroutine.yield(last_time, time, last_pitch)
         elseif pitch ~= last_note.pitch then
           -- Note changed.
-          local last_time, last_pitch = last_note.time, last_note.pitch
+          local output = { start_time = last_note.time, end_time = time, pitch = last_note.pitch }
+          coroutine.yield(output)
           last_note = { time = time, pitch = pitch }
-          coroutine.yield(last_time, time, last_pitch)
         end
       end
     end
