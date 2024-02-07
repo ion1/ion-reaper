@@ -185,6 +185,16 @@ describe("Envelope", function()
         }, env.table)
       end)
     end)
+
+    it("should not accept values going backward in time", function()
+      local env = Envelope.new()
+      assert.has.error(function()
+        env:merge({
+          { 1, 0, 0 },
+          { 0, 0, 0 },
+        })
+      end)
+    end)
   end)
 
   describe("merge_points", function()

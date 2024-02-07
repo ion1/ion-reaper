@@ -93,6 +93,18 @@ function Envelope:add(time, value, slope)
   end
 end
 
+local function check_elements_increasing_time(elements)
+  local prev_time = nil
+  for _, elem in ipairs(elements) do
+    local time = elem[1]
+    if prev_time and prev_time > time then
+      error(string.format("merge: time went backwards (%s, %s)", prev_time, time))
+    end
+
+    prev_time = time
+  end
+end
+
 -- Merge another table of elements onto the envelope based on the lowest value at any
 -- given time.
 --
@@ -107,6 +119,8 @@ end
 -- using the ceiling option.
 function Envelope:merge(elements, options)
   local ceiling = options and options.ceiling
+
+  check_elements_increasing_time(elements)
 
   if self.last_ix == 0 then
     -- Our table is empty, add verbatim.
