@@ -306,28 +306,36 @@ function Envelope:merge_points(points, options)
   local previous_time = nil
   local previous_value = nil
 
-  for i, point in ipairs(points) do
+  for _, point in ipairs(points) do
     local time, value = table.unpack(point)
 
     if previous_time ~= nil and previous_value ~= nil then
       if Misc.almost_equals(previous_time, time) then
-        error(
-          string.format(
-            "The times are equal, resulting in an infinite slope: %s, %s",
-            previous_time,
-            time
+        if not Misc.almost_equals(previous_value, value) then
+          -- The times are equal. If the values are not equal, the slope would be infinite.
+          error(
+            string.format(
+              "The times are equal, resulting in an infinite slope: %s, %s",
+              previous_time,
+              time
+            )
           )
-        )
+        else
+          -- The times and the values are equal. We can just skip this point.
+          goto continue
+        end
       end
 
       local slope = (value - previous_value) / (time - previous_time)
-      elements[i - 1] = { previous_time, previous_value, slope }
+      elements[#elements + 1] = { previous_time, previous_value, slope }
     end
 
     previous_time, previous_value = time, value
+
+    ::continue::
   end
 
-  elements[#points] = { previous_time, previous_value, 0 }
+  elements[#elements + 1] = { previous_time, previous_value, 0 }
 
   self:merge(elements, options)
 end

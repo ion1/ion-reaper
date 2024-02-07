@@ -227,6 +227,18 @@ describe("Envelope", function()
       end)
     end)
 
+    it("should accept points with the same time when also the values are the same", function()
+      local env = Envelope.new()
+      env:merge_points({
+        { 0, 100 },
+        { 0, 100 },
+      })
+
+      assert.are.same({
+        { 0, 100, 0 },
+      }, env.table)
+    end)
+
     it("should pass the ceiling parameter to merge", function()
       local env = Envelope.new()
       env:merge_points({
