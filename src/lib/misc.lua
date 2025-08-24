@@ -1,6 +1,6 @@
 local Misc = {}
 
-local DEBUGGING = false
+local DEBUGGING = true
 
 -- luacov: disable
 if DEBUGGING then
